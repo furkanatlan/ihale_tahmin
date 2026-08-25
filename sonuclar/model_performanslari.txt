@@ -1,0 +1,23 @@
+                       Model     R² (O) RMSE (M TL) (O) NRMSE (%) MAE (M TL) (O) MAPE (%) (O) MedAE (M TL) WAPE (%)   RMSLE Bias (M TL)
+ Histogram Gradient Boosting   0.8952 ★           22.58     24.71          20.71      28.61 ★        14.72    22.66  0.2573       20.71
+           Stacking Ensemble  0.8781 ★★           24.35     26.65          24.00     43.70 ★★        22.13    26.26  0.3909       24.00
+          Rastgele Orman (O) 0.7985 ★★★           31.32     34.27          30.60    59.69 ★★★        34.71    33.49  0.5014       30.60
+                    CatBoost     0.3938           54.31     59.43          51.78       105.35        61.08    56.66  0.7541       51.78
+              ElasticNet (O)     0.3920           54.39     59.52          52.39        79.48        43.52    57.32 14.3357      -52.39
+        K-En Yakın Komşu (O)     0.3520           56.15     61.45          53.39       103.09        41.77    58.42  0.7435       26.45
+                 XGBoost (O)    -0.1986           76.37     83.57          71.98       149.10        84.34    78.76  0.9397       71.98
+Çoklu Doğrusal Regresyon (O)    -0.3403           80.76     88.37          70.24        88.87        43.52    76.86 14.3469      -70.24
+
+
+
+(O): Tez ile ortak model veya metrik.
+★: En iyi, ★★: ikinci en iyi, ★★★: üçüncü en iyi R² veya MAPE sonucu.
+R²: Modelin gerçek bedellerdeki değişimi açıklama gücünü gösterir. Büyük olması daha iyidir.
+RMSE: Büyük hataları daha fazla cezalandıran tipik hata büyüklüğüdür. Küçük olması daha iyidir.
+NRMSE: RMSE'yi hedef ortalamasına göre yüzdeleştirir. Küçük olması daha iyidir.
+MAE: Tahminlerin gerçek bedelden ortalama mutlak uzaklığını gösterir. Küçük olması daha iyidir.
+MAPE: Gerçek değerlerden ortalama mutlak yüzde sapmayı gösterir. Küçük olması daha iyidir; düşük gerçek değerlerde büyüyebilir.
+MedAE: Mutlak hataların medyanını gösterir ve uç değerlerden daha az etkilenir. Küçük olması daha iyidir.
+WAPE: Toplam mutlak hatanın toplam gerçek bedele oranını gösterir. Küçük olması daha iyidir.
+RMSLE: Oransal hataları logaritmik ölçekte gösterir. Küçük olması daha iyidir.
+Bias: Modelin sistematik fazla veya eksik tahmin yönünü gösterir. Sıfıra yakın olması daha iyidir.

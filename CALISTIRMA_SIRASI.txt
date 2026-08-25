@@ -1,0 +1,37 @@
+VS CODE / POWERSHELL CALISTIRMA SIRASI
+=====================================
+
+Proje klasoru:
+C:\Users\MSI\Calismalar\Enes
+
+1) YALNIZCA ILK KURULUMDA
+-------------------------
+.\01_kurulum.cmd
+
+Bu komut .venv yoksa olusturur, varsa mevcut ortami kullanir ve eksik
+kutuphaneleri requirements.txt dosyasina gore kurar.
+
+2) EGITIM VE TUM SONUCLARI URETME
+---------------------------------
+.\02_egitim.cmd
+
+Bu komut Excel verisini okur, butun klasik ve modern modelleri egitir,
+performans metriklerini hesaplar, TXT/CSV/Excel raporlarini ve PNG grafiklerini
+sonuclar klasorune yazar. Nested CV OOF RMSE siralamasindaki en iyi 3 modeli
+en_iyi_3_model.joblib dosyasina kaydeder.
+
+3) TAHMIN UYGULAMASINI ACMA
+---------------------------
+.\03_uygulamayi_baslat.cmd
+
+Bu komut egitilmis 3 model ile manifest dosyasini denetler. Dosyalar hazirsa
+Streamlit uygulamasini acar. Uygulama acikken terminal mesgul kalir. Kapatmak
+icin Ctrl+C tuslarina basin.
+
+ILK KURULUMDAN SONRA GUNLUK KULLANIM IKI KOMUTTUR:
+
+- Excel degisti veya sonuclar yeniden uretilecekse: .\02_egitim.cmd
+- Yalnizca mevcut modellerle tahmin yapilacaksa: .\03_uygulamayi_baslat.cmd
+
+Onemli: Excel degistirildikten sonra once egitim, sonra uygulama calistirilir.
+Streamlit acikken yeniden egitim yapmayin; once Ctrl+C ile uygulamayi kapatin.

@@ -1,0 +1,41 @@
+﻿MODEL_KODU,MODEL,DIS_KAT,EN_IYI_PARAMETRELER
+CDR,Çoklu Doğrusal Regresyon (ÇDR),1,{}
+CDR,Çoklu Doğrusal Regresyon (ÇDR),2,{}
+CDR,Çoklu Doğrusal Regresyon (ÇDR),3,{}
+CDR,Çoklu Doğrusal Regresyon (ÇDR),4,{}
+CDR,Çoklu Doğrusal Regresyon (ÇDR),5,{}
+ER,ElasticNet (ER),1,"{""regressor__model__alpha"": 1.0, ""regressor__model__l1_ratio"": 0.1}"
+ER,ElasticNet (ER),2,"{""regressor__model__alpha"": 0.1, ""regressor__model__l1_ratio"": 0.9}"
+ER,ElasticNet (ER),3,"{""regressor__model__alpha"": 0.1, ""regressor__model__l1_ratio"": 0.9}"
+ER,ElasticNet (ER),4,"{""regressor__model__alpha"": 1.0, ""regressor__model__l1_ratio"": 0.1}"
+ER,ElasticNet (ER),5,"{""regressor__model__alpha"": 1.0, ""regressor__model__l1_ratio"": 0.1}"
+KNN,K-En Yakın Komşu (KNN),1,"{""model__n_neighbors"": 3, ""model__p"": 1, ""model__weights"": ""uniform""}"
+KNN,K-En Yakın Komşu (KNN),2,"{""model__n_neighbors"": 7, ""model__p"": 1, ""model__weights"": ""distance""}"
+KNN,K-En Yakın Komşu (KNN),3,"{""model__n_neighbors"": 3, ""model__p"": 2, ""model__weights"": ""distance""}"
+KNN,K-En Yakın Komşu (KNN),4,"{""model__n_neighbors"": 4, ""model__p"": 1, ""model__weights"": ""uniform""}"
+KNN,K-En Yakın Komşu (KNN),5,"{""model__n_neighbors"": 4, ""model__p"": 1, ""model__weights"": ""uniform""}"
+RF,Rastgele Orman (RF),1,"{""max_features"": ""sqrt"", ""min_samples_leaf"": 1, ""min_samples_split"": 2, ""n_estimators"": 300}"
+RF,Rastgele Orman (RF),2,"{""max_features"": 1.0, ""min_samples_leaf"": 1, ""min_samples_split"": 5, ""n_estimators"": 300}"
+RF,Rastgele Orman (RF),3,"{""max_features"": ""sqrt"", ""min_samples_leaf"": 1, ""min_samples_split"": 2, ""n_estimators"": 300}"
+RF,Rastgele Orman (RF),4,"{""max_features"": ""sqrt"", ""min_samples_leaf"": 1, ""min_samples_split"": 2, ""n_estimators"": 300}"
+RF,Rastgele Orman (RF),5,"{""max_features"": ""sqrt"", ""min_samples_leaf"": 2, ""min_samples_split"": 2, ""n_estimators"": 300}"
+XGB,XGBoost (XGB),1,"{""colsample_bytree"": 1.0, ""learning_rate"": 0.05, ""max_depth"": 2, ""n_estimators"": 150, ""reg_lambda"": 1.0, ""subsample"": 0.8}"
+XGB,XGBoost (XGB),2,"{""colsample_bytree"": 0.8, ""learning_rate"": 0.05, ""max_depth"": 3, ""n_estimators"": 50, ""reg_lambda"": 1.0, ""subsample"": 0.8}"
+XGB,XGBoost (XGB),3,"{""colsample_bytree"": 0.8, ""learning_rate"": 0.05, ""max_depth"": 3, ""n_estimators"": 150, ""reg_lambda"": 10.0, ""subsample"": 0.8}"
+XGB,XGBoost (XGB),4,"{""colsample_bytree"": 1.0, ""learning_rate"": 0.05, ""max_depth"": 3, ""n_estimators"": 150, ""reg_lambda"": 1.0, ""subsample"": 0.8}"
+XGB,XGBoost (XGB),5,"{""colsample_bytree"": 0.8, ""learning_rate"": 0.05, ""max_depth"": 2, ""n_estimators"": 150, ""reg_lambda"": 10.0, ""subsample"": 0.8}"
+CAT,CatBoost (Modern),1,"{""depth"": 5, ""iterations"": 300, ""l2_leaf_reg"": 10.0, ""learning_rate"": 0.1}"
+CAT,CatBoost (Modern),2,"{""depth"": 3, ""iterations"": 300, ""l2_leaf_reg"": 3.0, ""learning_rate"": 0.03}"
+CAT,CatBoost (Modern),3,"{""depth"": 3, ""iterations"": 300, ""l2_leaf_reg"": 3.0, ""learning_rate"": 0.1}"
+CAT,CatBoost (Modern),4,"{""depth"": 5, ""iterations"": 300, ""l2_leaf_reg"": 10.0, ""learning_rate"": 0.1}"
+CAT,CatBoost (Modern),5,"{""depth"": 3, ""iterations"": 300, ""l2_leaf_reg"": 10.0, ""learning_rate"": 0.03}"
+HGB,Histogram Gradient Boosting (Modern),1,"{""l2_regularization"": 0.0, ""learning_rate"": 0.1, ""max_iter"": 250, ""max_leaf_nodes"": 7, ""min_samples_leaf"": 5}"
+HGB,Histogram Gradient Boosting (Modern),2,"{""l2_regularization"": 1.0, ""learning_rate"": 0.03, ""max_iter"": 250, ""max_leaf_nodes"": 7, ""min_samples_leaf"": 5}"
+HGB,Histogram Gradient Boosting (Modern),3,"{""l2_regularization"": 1.0, ""learning_rate"": 0.03, ""max_iter"": 250, ""max_leaf_nodes"": 7, ""min_samples_leaf"": 5}"
+HGB,Histogram Gradient Boosting (Modern),4,"{""l2_regularization"": 0.0, ""learning_rate"": 0.1, ""max_iter"": 250, ""max_leaf_nodes"": 7, ""min_samples_leaf"": 5}"
+HGB,Histogram Gradient Boosting (Modern),5,"{""l2_regularization"": 1.0, ""learning_rate"": 0.03, ""max_iter"": 250, ""max_leaf_nodes"": 7, ""min_samples_leaf"": 10}"
+STACK,Stacking Ensemble (Modern),1,{}
+STACK,Stacking Ensemble (Modern),2,{}
+STACK,Stacking Ensemble (Modern),3,{}
+STACK,Stacking Ensemble (Modern),4,{}
+STACK,Stacking Ensemble (Modern),5,{}

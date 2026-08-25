@@ -1,0 +1,124 @@
+{
+  "olusturma_tarihi": "2026-07-14T17:39:43.242022+03:00",
+  "kaynak_excel": "C:\\Users\\MSI\\Calismalar\\Enes\\VERİLER_GÜNCELLENMİŞ.xlsx",
+  "model_kodu": "RF",
+  "model_adi": "Rastgele Orman (RF)",
+  "secim_olcutu": "Nested 5x4 CV OOF RMSE (en düşük)",
+  "ozellik_sirasi": [
+    "BORU_CAPI",
+    "HAT_UZUNLUGU_KM",
+    "HAT_VANASI_SAYISI",
+    "PIG_ISTASYONU_SAYISI"
+  ],
+  "hedef": "GUNCEL_SOZLESME_BEDELI_TL_TEMMUZ_2026",
+  "hedef_aciklamasi": "Yİ-ÜFE ile Temmuz 2026 değerine güncellenmiş sözleşme bedeli",
+  "nominal_bedel_alani": "SOZLESME_BEDELI_NOMINAL_TL",
+  "para_birimi": "TL",
+  "fiyat_bazi": "Temmuz 2026 Yİ-ÜFE",
+  "sira_no_model_girdisi_mi": false,
+  "sozlesme_tarihi_model_girdisi_mi": false,
+  "zaman_serisi_modeli_mi": false,
+  "yalnizca_streamlit_girdileri_kullanildi_mi": true,
+  "istenen_sabit_test_orani": 0.05,
+  "gercek_sabit_test_orani": 0.046153846153846156,
+  "degerlendirme_egitim_satir_sayisi": 62,
+  "sabit_test_satir_sayisi": 3,
+  "dogrulama_duzeni": "%5'e en yakın tam satır sayısıyla sabit test; kalan eğitim verisinde rastgele karıştırmalı nested KFold; zamansal bölme yok",
+  "tam_veri_parametreleri": {
+    "max_features": "sqrt",
+    "min_samples_leaf": 2,
+    "min_samples_split": 5,
+    "n_estimators": 300
+  },
+  "en_iyi_3_model": [
+    {
+      "sira": 1,
+      "model_kodu": "RF",
+      "model_adi": "Rastgele Orman (RF)",
+      "model_grubu": "Tez-klasik",
+      "R2": 0.5796479482633852,
+      "RMSE_TL": 555403060.5468471,
+      "NRMSE_YUZDE": 115.41580646864709,
+      "MAE_TL": 169851852.18367115,
+      "MAPE_YUZDE": 53.49007372319413,
+      "WAPE_YUZDE": 35.29614777540161,
+      "tam_veri_parametreleri": {
+        "max_features": "sqrt",
+        "min_samples_leaf": 2,
+        "min_samples_split": 5,
+        "n_estimators": 300
+      }
+    },
+    {
+      "sira": 2,
+      "model_kodu": "STACK",
+      "model_adi": "Stacking Ensemble (Modern)",
+      "model_grubu": "Modern ek",
+      "R2": 0.5704047072764049,
+      "RMSE_TL": 561476313.5128558,
+      "NRMSE_YUZDE": 116.67786179162252,
+      "MAE_TL": 181481650.62250456,
+      "MAPE_YUZDE": 71.35963544250689,
+      "WAPE_YUZDE": 37.71288376631276,
+      "tam_veri_parametreleri": {}
+    },
+    {
+      "sira": 3,
+      "model_kodu": "XGB",
+      "model_adi": "XGBoost (XGB)",
+      "model_grubu": "Tez-klasik",
+      "R2": 0.5406373051459785,
+      "RMSE_TL": 580603359.3309704,
+      "NRMSE_YUZDE": 120.6525669657116,
+      "MAE_TL": 175963115.42580646,
+      "MAPE_YUZDE": 54.11717199986646,
+      "WAPE_YUZDE": 36.566101842523196,
+      "tam_veri_parametreleri": {
+        "colsample_bytree": 0.8,
+        "learning_rate": 0.05,
+        "max_depth": 2,
+        "n_estimators": 150,
+        "reg_lambda": 10.0,
+        "subsample": 0.8
+      }
+    }
+  ],
+  "egitim_verisi_ozellik_araliklari": {
+    "BORU_CAPI": {
+      "minimum": 6.0,
+      "medyan": 12.0,
+      "maksimum": 48.0
+    },
+    "HAT_UZUNLUGU_KM": {
+      "minimum": 5.07,
+      "medyan": 43.23,
+      "maksimum": 289.6
+    },
+    "HAT_VANASI_SAYISI": {
+      "minimum": 0.0,
+      "medyan": 1.0,
+      "maksimum": 10.0
+    },
+    "PIG_ISTASYONU_SAYISI": {
+      "minimum": 0.0,
+      "medyan": 2.0,
+      "maksimum": 4.0
+    }
+  },
+  "egitim_satir_sayisi": 65,
+  "uygulama_model_dosyasi": "en_iyi_3_model.joblib",
+  "tahmin_alt_siniri": 0.0,
+  "yaklasik_konformal_seviye": 0.9,
+  "yaklasik_konformal_yaricap": 408381407.85449827,
+  "paket_surumu": {
+    "python": "3.10.11",
+    "numpy": "2.2.6",
+    "pandas": "2.3.3",
+    "scikit_learn": "1.7.2",
+    "matplotlib": "3.10.9",
+    "xgboost": "3.2.0",
+    "catboost": "1.2.10",
+    "streamlit": "1.59.2",
+    "altair": "6.2.2"
+  }
+}
