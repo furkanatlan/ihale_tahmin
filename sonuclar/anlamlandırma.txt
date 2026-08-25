@@ -1,0 +1,11 @@
+| Metrik | Sonuç | Anlamı |
+|---|---:|---|
+| R² | 0,8952 | Model, sözleşme bedellerindeki değişimin yaklaşık %89,52’sini açıklıyor. Bu, “%89,52 doğru tahmin” demek değildir. |
+| RMSE | 22,58 milyon TL | Büyük hatalara daha fazla ceza veren hata ölçüsü. Modelin hata büyüklüğü yaklaşık 22,58 milyon TL seviyesinde. |
+| NRMSE | %24,71 | RMSE’nin ortalama gerçek bedele oranı. Hata seviyesi, ortalama ihale bedelinin yaklaşık %24,71’i. |
+| MAE | 20,71 milyon TL | Tahminler gerçek değerlerden ortalama 20,71 milyon TL uzakta. |
+| MAPE | %28,61 | Her ihalenin mutlak yüzde hatasının ortalaması yaklaşık %28,61. |
+| MedAE | 14,72 milyon TL | Tahminlerin yarısında mutlak hata 14,72 milyon TL’den düşük, yarısında yüksek. |
+| WAPE | %22,66 | Toplam mutlak hata, toplam gerçek ihale tutarının yaklaşık %22,66’sı. |
+| RMSLE | 0,2573 | Modelin oransal/çarpansal sapmasını logaritmik ölçekte gösterir. Düşük olması iyidir. |
+| Bias | +20,71 milyon TL | Model ortalama olarak gerçek değerden 20,71 milyon TL daha yüksek tahmin veriyor. |
