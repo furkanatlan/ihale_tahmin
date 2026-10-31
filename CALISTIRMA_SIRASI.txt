@@ -35,3 +35,11 @@ ILK KURULUMDAN SONRA GUNLUK KULLANIM IKI KOMUTTUR:
 
 Onemli: Excel degistirildikten sonra once egitim, sonra uygulama calistirilir.
 Streamlit acikken yeniden egitim yapmayin; once Ctrl+C ile uygulamayi kapatin.
+
+TUIK Yİ-UFE YENIDEN DEGERLEME
+-----------------------------
+Uygulama her tahminden once TUIK sitesini kontrol eder. Yeni Yİ-UFE bulteni
+okunursa aylik degisim veri\yi_ufe_aylik_degisim.csv dosyasina eklenir ve
+tahmin en son doneme tasinir. Okunamazsa tahmin yine yapilir ve son kayitli
+degerleme donemi ekranda yazilir. Yeni oran, uygulamanin kenar cubugundaki
+"TUIK oranini elle ekle" formuyla da girilebilir.

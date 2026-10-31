@@ -12,3 +12,4 @@ joblib==1.5.3
 PyMuPDF==1.28.0
 streamlit==1.59.2
 altair==6.2.2
+requests==2.34.2
