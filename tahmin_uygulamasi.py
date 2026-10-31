@@ -18,6 +18,7 @@ from yeniden_degerleme import (
     AylikDegisim,
     Donem,
     degerleme_katsayisi,
+    evds_anahtari,
     kayit_ekle,
     kayitlari_oku,
     yeniden_degerleme_hazirla,
@@ -37,8 +38,8 @@ st.set_page_config(
 st.title("Güncel ihale sözleşme bedeli tahmini")
 st.caption(
     "Dört teknik girdiden güncel sözleşme bedelini en iyi üç modelle tahmin eder. Modeller Temmuz 2026 "
-    "Yİ-ÜFE fiyat bazında eğitilmiştir; her tahminden önce TÜİK sitesi kontrol edilerek sonuç en son "
-    "yayımlanmış Yİ-ÜFE dönemine yeniden değerlenir. Para birimi TL'dir."
+    "Yİ-ÜFE fiyat bazında eğitilmiştir; her tahminden önce TÜİK Yİ-ÜFE endeksi (TCMB EVDS üzerinden) kontrol "
+    "edilerek sonuç en son yayımlanmış döneme yeniden değerlenir. Para birimi TL'dir."
 )
 
 
@@ -68,7 +69,9 @@ with st.sidebar:
     last_period = applied[-1].donem if applied else base_period
     st.caption(
         f"Model fiyat bazı: **{base_period.etiket}** · Kayıtlı son dönem: **{last_period.etiket}**. "
-        "Uygulama her tahminde TÜİK sitesini kontrol eder; yeni veri okunursa kayda otomatik eklenir."
+        "Uygulama her tahminde TÜİK Yİ-ÜFE endeksini TCMB EVDS üzerinden kontrol eder "
+        f"(EVDS anahtarı: {'✅ tanımlı' if evds_anahtari() else '❌ tanımlı değil, TÜİK sitesi taranır'}); "
+        "yeni veri bulunursa kayda otomatik eklenir."
     )
     if records:
         st.dataframe(
@@ -145,15 +148,15 @@ if submitted:
             "yüksek belirsizlik taşır:\n\n- " + "\n- ".join(extrapolation)
         )
 
-    with st.status("🔎 TÜİK sitesinde güncel Yİ-ÜFE verisi aranıyor…", expanded=True) as status:
+    with st.status("🔎 Güncel TÜİK Yİ-ÜFE verisi aranıyor (TCMB EVDS)…", expanded=True) as status:
         revaluation = yeniden_degerleme_hazirla(base_period, ilerleme=st.write)
         tuik_state = revaluation.tuik.durum
         status.update(
             label={
-                "yeni_veri_eklendi": "✅ TÜİK'te yeni Yİ-ÜFE verisi bulundu ve eklendi",
-                "yeni_veri_yok": "✅ TÜİK kontrol edildi: yeni Yİ-ÜFE verisi yok",
-                "okunamadi": "⚠️ TÜİK kontrol edildi: yeni veri okunamadı",
-                "erisilemedi": "❌ TÜİK sitesine erişilemedi",
+                "yeni_veri_eklendi": "✅ Yeni TÜİK Yİ-ÜFE verisi bulundu ve eklendi",
+                "yeni_veri_yok": "✅ Kontrol edildi: yeni Yİ-ÜFE verisi yok",
+                "okunamadi": "⚠️ Kontrol edildi: yeni veri okunamadı",
+                "erisilemedi": "❌ EVDS ve TÜİK sitesine erişilemedi",
             }[tuik_state],
             state="error" if tuik_state == "erisilemedi" else "complete",
             expanded=False,
@@ -175,13 +178,13 @@ if submitted:
         st.success(f"TÜİK'ten yeni Yİ-ÜFE verisi eklendi: **{added}**. {period_text} {checked_at}")
     elif tuik_state == "yeni_veri_yok":
         st.info(
-            f"TÜİK'te {revaluation.son_donem.etiket} sonrasına ait yeni Yİ-ÜFE verisi bulunamadı; yeni "
+            f"{revaluation.son_donem.etiket} sonrasına ait yeni Yİ-ÜFE verisi bulunamadı; yeni "
             f"değerleme eklenmedi. Son değerleme **{revaluation.son_donem.etiket}** dönemine aittir. "
             f"{period_text} {checked_at}"
         )
     else:
         st.warning(
-            "TÜİK sitesinde yeni Yİ-ÜFE verisi bulunamadı veya okunamadı; yeni değerleme eklenmedi. "
+            "Güncel Yİ-ÜFE verisi alınamadı veya okunamadı; yeni değerleme eklenmedi. "
             f"Tahmin, son kayıtlı değerleme olan **{revaluation.son_donem.etiket}** dönemine göre "
             f"yapılmıştır. {period_text} {checked_at}"
         )

@@ -52,13 +52,16 @@ Kaynak dosya: `VERİLER_GÜNCELLENMİŞ.xlsx` — **65 proje**.
 
 ## 💱 TÜİK Yİ-ÜFE ile yeniden değerleme
 
-Eğitim verisindeki bütün bedeller **Temmuz 2026 Yİ-ÜFE** düzeyine güncellenmiştir; bu nedenle model çıktısı da Temmuz 2026 fiyatlarıyladır. Uygulama **her tahmin öncesinde** TÜİK sitesini kontrol eder ve sonucu yayımlanmış **en son Yİ-ÜFE dönemine** taşır.
+Eğitim verisindeki bütün bedeller **Temmuz 2026 Yİ-ÜFE** düzeyine güncellenmiştir; bu nedenle model çıktısı da Temmuz 2026 fiyatlarıyladır. Uygulama **her tahmin öncesinde** TÜİK'in Yİ-ÜFE endeksini **TCMB EVDS API'si** üzerinden kontrol eder ve sonucu yayımlanmış **en son Yİ-ÜFE dönemine** taşır.
 
 ```mermaid
 flowchart LR
-    A[🧮 Model tahmini<br/>Temmuz 2026 TL] --> B{🌐 TÜİK sitesi<br/>kontrol edilir}
-    B -- Yeni Yİ-ÜFE bülteni<br/>bulundu ve okundu --> C[✅ Aylık oran kayda eklenir]
-    B -- Yeni veri yok /<br/>okunamadı / erişilemedi --> D[ℹ️ Yeni değerleme eklenmez]
+    A[🧮 Model tahmini<br/>Temmuz 2026 TL] --> B{🏦 TCMB EVDS<br/>TÜİK Yİ-ÜFE endeksi}
+    B -- EVDS'ye ulaşılamazsa --> G{🌐 TÜİK ana sayfası<br/>bülten listesi}
+    B -- Yeni dönem<br/>yayımlanmış --> C[✅ Aylık değişim kayda eklenir]
+    G -- Bülten bulundu<br/>ve okundu --> C
+    G -- Bulunamadı --> D
+    B -- Yeni veri yok --> D[ℹ️ Yeni değerleme eklenmez]
     C --> E[🔗 Aylık değişimler zincirlenir]
     D --> E
     E --> F[💰 Güncel tahmin<br/>+ hangi dönem kullanıldı bilgisi]
@@ -68,23 +71,30 @@ flowchart LR
 
 ```text
 Katsayı = Π (1 + aylık Yİ-ÜFE değişimi / 100)   (baz dönemden sonraki her ay için)
+        = Son dönem Yİ-ÜFE endeksi / Baz dönem (Temmuz 2026) Yİ-ÜFE endeksi
 Güncel tahmin = Model tahmini × Katsayı
 ```
 
-Örnek (31.10.2026 itibarıyla): Ağustos 2026 **%2,57**, Eylül 2026 **%2,07** → katsayı **1,0257 × 1,0207 = 1,0469**. Yani Temmuz 2026 fiyatıyla 100 milyon TL olan bir tahmin, Eylül 2026 fiyatıyla **≈104,7 milyon TL** olarak gösterilir.
+Örnek (01.11.2026 itibarıyla, EVDS `TP.TUFE1YI.T1`): Temmuz 2026 endeksi **5.637,14**, Eylül 2026 endeksi **5.901,26** (Ağustos **%2,57**, Eylül **%2,07**) → katsayı **5.901,26 / 5.637,14 = 1,0469**. Yani Temmuz 2026 fiyatıyla 100 milyon TL olan bir tahmin, Eylül 2026 fiyatıyla **≈104,7 milyon TL** olarak gösterilir.
 
 **Kullanıcıya gösterilen bilgiler**
 
 | Durum | Ekranda görülen |
 |---|---|
-| 🔎 Arama sürerken | "TÜİK sitesinde güncel Yİ-ÜFE verisi aranıyor…" ve adım adım ilerleme mesajları |
+| 🔎 Arama sürerken | "Güncel TÜİK Yİ-ÜFE verisi aranıyor (TCMB EVDS)…" ve adım adım ilerleme mesajları |
 | ✅ Yeni veri bulundu | Eklenen dönem, yeni katsayı ve kullanılan aylar |
 | ℹ️ Yeni veri yok | "Yeni değerleme eklenmedi. Son değerleme **Eylül 2026** dönemine aittir." |
 | ⚠️ Okunamadı / ❌ Erişilemedi | Tahmin yine yapılır; son kayıtlı değerlemenin **yıl ve ayı** açıkça belirtilir |
 
-**Kayıt dosyası:** [veri/yi_ufe_aylik_degisim.csv](veri/yi_ufe_aylik_degisim.csv) — her ayın Yİ-ÜFE aylık değişimi, kaynağı ve kayıt tarihi. TÜİK'ten otomatik okunan oranlar bu dosyaya eklenir.
+**Kayıt dosyası:** [veri/yi_ufe_aylik_degisim.csv](veri/yi_ufe_aylik_degisim.csv) — her ayın Yİ-ÜFE aylık değişimi, kaynağı ve kayıt tarihi. EVDS'den (veya TÜİK bülteninden) otomatik okunan oranlar bu dosyaya eklenir; elle girilmiş oranlar EVDS'nin resmî endeksiyle doğrulanıp düzeltilir.
 
-> 🔐 **Bilinmesi gereken teknik kısıt:** TÜİK'in **Parasal Değeri Güncelleme Aracı** (ty.tuik.gov.tr) kullanıcı girişi gerektirir; yeni **veri portalı** (veriportali.tuik.gov.tr) ise içeriği tarayıcıda JavaScript ile yükler ve programatik isteklere kapalıdır. Uygulama bu nedenle herkese açık TÜİK ana sayfasındaki bülten listesini tarar; yeni Yİ-ÜFE bülteni orada görünür ve metni okunabilirse oranı otomatik ekler. Okunamadığında uygulamanın kenar çubuğundaki **"➕ TÜİK oranını elle ekle"** formuyla oran birkaç saniyede girilebilir. Model hata metrikleri (RMSE, MAE) Temmuz 2026 fiyat bazındadır.
+> 🔑 **EVDS API anahtarı:** TCMB'nin Elektronik Veri Dağıtım Sistemi (EVDS), TÜİK'in Yİ-ÜFE endeksini (2003=100, seri `TP.TUFE1YI.T1`) aynen yayımlar. Ücretsiz üyelikle alınan API anahtarı, proje kökünde **git'e gönderilmeyen** bir `.env` dosyasına yazılır:
+>
+> ```text
+> EVDS_API_KEY=anahtarınız
+> ```
+>
+> Alternatif olarak `EVDS_API_KEY` ortam değişkeni de kullanılabilir. Anahtar tanımlı değilse veya EVDS'ye ulaşılamazsa uygulama herkese açık TÜİK ana sayfasındaki bülten listesini tarar; o da sonuç vermezse kenar çubuğundaki **"➕ TÜİK oranını elle ekle"** formu kullanılabilir. (TÜİK'in Parasal Değeri Güncelleme Aracı kullanıcı girişi gerektirdiğinden doğrudan kullanılamaz.) Model hata metrikleri (RMSE, MAE) Temmuz 2026 fiyat bazındadır.
 
 ---
 
@@ -247,7 +257,7 @@ Doğrulanan ortam: **Windows + Python 3.10.11**. Kesin sürümler [requirements.
 - 🧭 **Ekstrapolasyon:** Eğitim aralığı dışındaki girdilerde uygulama tahmin üretir ama uyarı verir.
 - 🧱 **Eksik etkenler:** Arazi yapısı, bölge, zemin, kamulaştırma, malzemeli/malzemesiz ihale ayrımı gibi etkenler modelde yoktur.
 - 💱 **Endeks:** Yİ-ÜFE genel bir üretici fiyat endeksidir; çelik boru veya inşaat maliyetindeki özel dalgalanmaları birebir yansıtmayabilir.
-- 🌐 **TÜİK erişimi:** Otomatik okuma TÜİK'in herkese açık sayfalarına bağlıdır; okunamadığında son kayıtlı dönem kullanılır ve bu açıkça bildirilir.
+- 🌐 **Veri erişimi:** Otomatik güncelleme EVDS API anahtarına ve TCMB/TÜİK sitelerinin erişilebilirliğine bağlıdır; veri alınamadığında son kayıtlı dönem kullanılır ve bu açıkça bildirilir.
 
 ---
 

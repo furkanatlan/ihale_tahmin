@@ -38,8 +38,12 @@ Streamlit acikken yeniden egitim yapmayin; once Ctrl+C ile uygulamayi kapatin.
 
 TUIK Yİ-UFE YENIDEN DEGERLEME
 -----------------------------
-Uygulama her tahminden once TUIK sitesini kontrol eder. Yeni Yİ-UFE bulteni
-okunursa aylik degisim veri\yi_ufe_aylik_degisim.csv dosyasina eklenir ve
-tahmin en son doneme tasinir. Okunamazsa tahmin yine yapilir ve son kayitli
-degerleme donemi ekranda yazilir. Yeni oran, uygulamanin kenar cubugundaki
-"TUIK oranini elle ekle" formuyla da girilebilir.
+Uygulama her tahminden once TUIK Yİ-UFE endeksini TCMB EVDS API'si uzerinden
+(seri TP.TUFE1YI.T1) kontrol eder. Yeni ay yayimlanmissa aylik degisim
+veri\yi_ufe_aylik_degisim.csv dosyasina eklenir ve tahmin en son doneme tasinir.
+
+EVDS API anahtari proje kokundeki .env dosyasinda tutulur (git'e gonderilmez):
+    EVDS_API_KEY=anahtariniz
+Anahtar yoksa veya EVDS'ye ulasilamazsa TUIK ana sayfasi taranir. Veri yine
+bulunamazsa tahmin yapilir ve son kayitli degerleme donemi ekranda yazilir.
+Yeni oran, kenar cubugundaki "TUIK oranini elle ekle" formuyla da girilebilir.
