@@ -25,10 +25,14 @@ from catboost import CatBoostRegressor
 from sklearn.base import clone
 from sklearn.compose import TransformedTargetRegressor
 from sklearn.ensemble import (
+    ExtraTreesRegressor,
     HistGradientBoostingRegressor,
     RandomForestRegressor,
     StackingRegressor,
+    VotingRegressor,
 )
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import RBF, ConstantKernel, DotProduct, WhiteKernel
 from sklearn.inspection import permutation_importance
 from sklearn.linear_model import ElasticNet, LinearRegression, Ridge, RidgeCV
 from sklearn.metrics import (
@@ -42,15 +46,24 @@ from sklearn.metrics import (
 from sklearn.model_selection import GridSearchCV, KFold, train_test_split
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.pipeline import Pipeline, make_pipeline
-from sklearn.preprocessing import RobustScaler, StandardScaler
+from sklearn.preprocessing import FunctionTransformer, RobustScaler, StandardScaler
 from sklearn.tree import plot_tree
 from xgboost import XGBRegressor
 
+from model_bilesenleri import (
+    MONOTON_OZELLIK_ADLARI,
+    LogHedefRegresor,
+    fiziksel_ozellikler,
+    log_ozellikler,
+    monoton_fiziksel_ozellikler,
+)
 from model_schema import MODEL_FEATURES
 
 
 RANDOM_STATE = 42
 HOLDOUT_TEST_RATIO = 0.05
+# Uygulamaya alınacak modeller, girdi artarken tahmini düşürdüğü durum oranı bu eşiği aşmayanlardan seçilir.
+MAX_MONOTONLUK_IHLALI_YUZDE = 1.0
 FEATURES = list(MODEL_FEATURES)
 TARGET = "GUNCEL_SOZLESME_BEDELI_TL_TEMMUZ_2026"
 NOMINAL_TARGET = "SOZLESME_BEDELI_NOMINAL_TL"
@@ -71,6 +84,13 @@ DISPLAY_NAMES = {
     "CAT": "CatBoost (Modern)",
     "HGB": "Histogram Gradient Boosting (Modern)",
     "STACK": "Stacking Ensemble (Modern)",
+    "ET_FE": "Extra Trees + Fiziksel Özellikler (Yeni)",
+    "CAT_FE": "CatBoost + Fiziksel Özellikler (Yeni)",
+    "ET_FE_MONO": "Monoton Extra Trees + Fiziksel Özellikler (Yeni)",
+    "CAT_FE_MONO": "Monoton CatBoost + Fiziksel Özellikler (Yeni)",
+    "XGB_MONO": "Monoton XGBoost (Yeni)",
+    "GPR": "Gauss Süreci Regresyonu (Yeni)",
+    "BLEND": "Monoton Harman: ET+FÖ, CatBoost+FÖ, XGBoost (Yeni)",
 }
 
 MODEL_GROUP = {
@@ -82,6 +102,23 @@ MODEL_GROUP = {
     "CAT": "Modern ek",
     "HGB": "Modern ek",
     "STACK": "Modern ek",
+    "ET_FE": "Geliştirilmiş",
+    "CAT_FE": "Geliştirilmiş",
+    "ET_FE_MONO": "Geliştirilmiş",
+    "CAT_FE_MONO": "Geliştirilmiş",
+    "XGB_MONO": "Geliştirilmiş",
+    "GPR": "Geliştirilmiş",
+    "BLEND": "Geliştirilmiş",
+}
+GROUP_COLORS = {"Tez-klasik": "#2878B5", "Modern ek": "#D95F02", "Geliştirilmiş": "#1B9E77"}
+
+# Eğitimden gerekçeli olarak çıkarılan projeler (SIRA NO → gerekçe). Kayıtlar Excel'de kalır,
+# sonuclar/haric_tutulan_projeler.csv dosyasına yazılır; karar buradan geri alınabilir.
+HARIC_TUTULAN_PROJELER = {
+    23: (
+        "MAGA FAZ 2 DGBH: km başına maliyet (41,1 mn TL/km) benzer 40 inç hatların 2-3 katı; "
+        "kurum içi teyitle olağan kapsam dışı olduğu doğrulandı (01.11.2026)."
+    ),
 }
 
 METRIC_LABELS = {
@@ -109,6 +146,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output", type=Path, default=Path("sonuclar"))
     parser.add_argument("--fast", action="store_true", help="Daha küçük gridlerle hızlı duman testi")
     parser.add_argument("--bootstrap", type=int, default=1000, help="Metrik güven aralığı bootstrap sayısı")
+    parser.add_argument(
+        "--haric-tutma-yok",
+        action="store_true",
+        help="HARIC_TUTULAN_PROJELER listesini yok sayıp tüm projelerle eğitir",
+    )
     return parser.parse_args()
 
 
@@ -331,7 +373,126 @@ def build_models(fast: bool = False) -> dict[str, ModelSpec]:
             ),
             None,
         ),
+        **improved_models(fast),
     }
+
+
+def improved_models(fast: bool = False) -> dict[str, ModelSpec]:
+    """Fiziksel özellik mühendisliği, monoton kısıt, Gauss süreci ve harman modelleri."""
+    trees = 150 if fast else 400
+    monotone_features = len(MONOTON_OZELLIK_ADLARI)
+
+    def extra_trees(monotone: bool = False, **params: Any) -> Pipeline:
+        features = monoton_fiziksel_ozellikler if monotone else fiziksel_ozellikler
+        if monotone:
+            params["monotonic_cst"] = [1] * monotone_features
+        return Pipeline(
+            [
+                ("fiziksel", FunctionTransformer(features)),
+                ("model", ExtraTreesRegressor(n_estimators=trees, random_state=RANDOM_STATE, n_jobs=1, **params)),
+            ]
+        )
+
+    def catboost(monotone: bool = False, **params: Any) -> Pipeline:
+        features = monoton_fiziksel_ozellikler if monotone else fiziksel_ozellikler
+        if monotone:
+            params["monotone_constraints"] = "(" + ",".join(["1"] * monotone_features) + ")"
+        return Pipeline(
+            [
+                ("fiziksel", FunctionTransformer(features)),
+                (
+                    "model",
+                    CatBoostRegressor(
+                        loss_function="RMSE",
+                        verbose=False,
+                        allow_writing_files=False,
+                        random_seed=RANDOM_STATE,
+                        thread_count=1,
+                        **params,
+                    ),
+                ),
+            ]
+        )
+
+    def monotone_xgb(**params: Any) -> XGBRegressor:
+        # Maliyet; çap, uzunluk, vana ve PİG istasyonu sayısı arttıkça azalamaz.
+        return XGBRegressor(
+            objective="reg:squarederror",
+            tree_method="hist",
+            monotone_constraints="(1,1,1,1)",
+            random_state=RANDOM_STATE,
+            n_jobs=1,
+            verbosity=0,
+            **params,
+        )
+
+    gpr = LogHedefRegresor(
+        make_pipeline(
+            FunctionTransformer(log_ozellikler),
+            StandardScaler(),
+            GaussianProcessRegressor(
+                ConstantKernel(1.0) * RBF(length_scale=np.ones(4), length_scale_bounds=(1e-2, 1e3))
+                + DotProduct(sigma_0=1.0)
+                + WhiteKernel(0.1),
+                normalize_y=True,
+                n_restarts_optimizer=3,
+                random_state=RANDOM_STATE,
+            ),
+        )
+    )
+    # Harman: üç monoton bileşenin eşit ağırlıklı ortalaması. Monoton modellerin ortalaması da monotondur.
+    blend = VotingRegressor(
+        [
+            ("et_fe_mono", extra_trees(monotone=True, max_features=1.0, min_samples_leaf=2)),
+            (
+                "cat_fe_mono",
+                catboost(monotone=True, iterations=300, depth=3, learning_rate=0.05, l2_leaf_reg=3.0),
+            ),
+            (
+                "xgb_mono",
+                monotone_xgb(n_estimators=150, learning_rate=0.05, max_depth=3, subsample=0.8, colsample_bytree=0.8),
+            ),
+        ]
+    )
+    et_grid = {
+        "model__max_features": [0.6, 1.0],
+        "model__min_samples_leaf": [1, 2, 3] if not fast else [2],
+    }
+    cat_grid = {
+        "model__depth": [3, 4] if not fast else [3],
+        "model__learning_rate": [0.03, 0.08],
+        "model__l2_leaf_reg": [3.0] if fast else [3.0, 10.0],
+    }
+    return {
+        "ET_FE": ModelSpec(extra_trees(), et_grid),
+        "CAT_FE": ModelSpec(catboost(iterations=300 if not fast else 100), cat_grid),
+        "ET_FE_MONO": ModelSpec(extra_trees(monotone=True), et_grid),
+        "CAT_FE_MONO": ModelSpec(catboost(monotone=True, iterations=300 if not fast else 100), cat_grid),
+        "XGB_MONO": ModelSpec(
+            monotone_xgb(subsample=0.8, colsample_bytree=0.8),
+            {
+                "n_estimators": [150, 300] if not fast else [150],
+                "learning_rate": [0.05, 0.1],
+                "max_depth": [2, 3],
+            },
+        ),
+        "GPR": ModelSpec(gpr, None),
+        "BLEND": ModelSpec(blend, None),
+    }
+
+
+def monotonicity_violation_rate(model: Any, x: pd.DataFrame) -> float:
+    """Bir girdi artırıldığında (çap/uzunluk +%10, vana/PİG +1) tahminin %2'den fazla düştüğü oran (%)."""
+    base = predict_nonnegative(model, x)
+    violations = []
+    for feature in FEATURES:
+        shifted = x.copy()
+        if feature in ("HAT_VANASI_SAYISI", "PIG_ISTASYONU_SAYISI"):
+            shifted[feature] = shifted[feature] + 1
+        else:
+            shifted[feature] = shifted[feature] * 1.10
+        violations.append(np.mean(predict_nonnegative(model, shifted) < base * 0.98))
+    return float(np.mean(violations) * 100.0)
 
 
 def calculate_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
@@ -640,8 +801,8 @@ def plot_metric_bars(metrics: pd.DataFrame, graph_dir: Path) -> None:
         high = frame[f"{metric}_UST95"] / scale
         errors = np.vstack([values - low, high - values])
 
-        fig, ax = plt.subplots(figsize=(11, 6))
-        colors = ["#2878B5" if group == "Tez-klasik" else "#D95F02" for group in frame["MODEL_GRUBU"]]
+        fig, ax = plt.subplots(figsize=(11, 7.5))
+        colors = [GROUP_COLORS[group] for group in frame["MODEL_GRUBU"]]
         bars = ax.barh(frame["MODEL"], values, xerr=errors, color=colors, alpha=0.88, capsize=3)
         ax.invert_yaxis()
         if metric == "Bias":
@@ -679,10 +840,13 @@ def plot_model_diagnostics(
     ax.set_xlabel("Gerçek bedele göre sıralı proje")
     ax.set_ylabel("Güncel sözleşme bedeli (milyon TL)")
     ax.set_title("Tüm modeller: gerçek ve iç içe CV OOF tahminleri")
-    ax.legend(ncol=3)
+    ax.legend(ncol=4)
     save_figure(fig, graph_dir / "10_tum_modeller_gercek_tahmin.png")
 
-    fig, axes = plt.subplots(2, 4, figsize=(18, 9))
+    grid_rows = math.ceil(len(oof) / 4)
+    fig, axes = plt.subplots(grid_rows, 4, figsize=(18, 4.5 * grid_rows))
+    for ax in axes.flat[len(oof):]:
+        ax.set_visible(False)
     lo = min(y.min(), *(pred.min() for pred in oof.values())) / 1e6
     hi = max(y.max(), *(pred.max() for pred in oof.values())) / 1e6
     for ax, (code, pred) in zip(axes.flat, oof.items()):
@@ -694,7 +858,9 @@ def plot_model_diagnostics(
     fig.suptitle("Modern parite grafikleri: gerçek ve OOF tahmin", y=1.01)
     save_figure(fig, graph_dir / "11_parite_kucuk_coklular.png")
 
-    fig, axes = plt.subplots(2, 4, figsize=(18, 9))
+    fig, axes = plt.subplots(grid_rows, 4, figsize=(18, 4.5 * grid_rows))
+    for ax in axes.flat[len(oof):]:
+        ax.set_visible(False)
     for ax, (code, pred) in zip(axes.flat, oof.items()):
         residual = pred - y
         ax.scatter(pred / 1e6, residual / 1e6, alpha=0.72, s=30)
@@ -763,7 +929,7 @@ def plot_feature_importance(
         summary["OZELLIK"].map(labels),
         summary["mean"] / 1e6,
         xerr=summary["std"].fillna(0) / 1e6,
-        color="#D95F02" if MODEL_GROUP[best_code] == "Modern ek" else "#2878B5",
+        color=GROUP_COLORS[MODEL_GROUP[best_code]],
         alpha=0.85,
         capsize=3,
     )
@@ -876,6 +1042,13 @@ def write_text_report(
         "CAT": "CatBoost",
         "HGB": "Histogram Gradient Boosting",
         "STACK": "Stacking Ensemble",
+        "ET_FE": "Extra Trees + Fiziksel Özellikler",
+        "CAT_FE": "CatBoost + Fiziksel Özellikler",
+        "ET_FE_MONO": "Monoton Extra Trees + FÖ",
+        "CAT_FE_MONO": "Monoton CatBoost + FÖ",
+        "XGB_MONO": "Monoton XGBoost",
+        "GPR": "Gauss Süreci Regresyonu",
+        "BLEND": "Monoton Harman (ET+FÖ, CAT+FÖ, XGB)",
     }
 
     r2_stars = {
@@ -913,6 +1086,9 @@ def write_text_report(
         "",
         "",
         "(O): Tez ile ortak model veya metrik.",
+        "FÖ: Fiziksel özellikler (çap×uzunluk, çap²×uzunluk, log uzunluk, km başına vana).",
+        "Monoton: Tahmin; çap, uzunluk, vana ve PİG istasyonu sayısı arttıkça azalamaz (fiziksel tutarlılık).",
+        "Uygulamaya alınan modeller: monotonluk ihlali ≤ %1 olanlar arasında Nested CV RMSE'si en düşük 3 model.",
         "★: En iyi, ★★: ikinci en iyi, ★★★: üçüncü en iyi R² veya MAPE sonucu.",
         "R²: Modelin gerçek bedellerdeki değişimi açıklama gücünü gösterir. Büyük olması daha iyidir.",
         "RMSE: Büyük hataları daha fazla cezalandıran tipik hata büyüklüğüdür. Küçük olması daha iyidir.",
@@ -966,6 +1142,14 @@ def main() -> int:
     setup_plot_style()
 
     raw, data = load_data(args.excel.resolve())
+    excluded_projects = {} if args.haric_tutma_yok else HARIC_TUTULAN_PROJELER
+    excluded_mask = data["SIRA_NO"].isin(excluded_projects)
+    excluded = data.loc[excluded_mask, ["SIRA_NO", "PROJE_ADI", *FEATURES, TARGET]].copy()
+    excluded["GEREKCE"] = excluded["SIRA_NO"].map(excluded_projects)
+    excluded.to_csv(output_dir / "haric_tutulan_projeler.csv", index=False, encoding="utf-8-sig")
+    data = data.loc[~excluded_mask].reset_index(drop=True)
+    for _, row in excluded.iterrows():
+        print(f"[Hariç tutuldu] {row['SIRA_NO']} - {row['PROJE_ADI']}: {row['GEREKCE']}", flush=True)
     x = data[FEATURES]
     y = data[TARGET]
     if tuple(x.columns) != MODEL_FEATURES:
@@ -996,8 +1180,15 @@ def main() -> int:
         models, x, y, train_idx, test_idx
     )
     final_models, full_params = tune_full_models(models, x, y)
+    primary["MONOTONLUK_IHLALI_YUZDE"] = [
+        monotonicity_violation_rate(final_models[code], x) for code in primary["MODEL_KODU"]
+    ]
+    primary["FIZIKSEL_TUTARLI"] = primary["MONOTONLUK_IHLALI_YUZDE"] <= MAX_MONOTONLUK_IHLALI_YUZDE
 
-    top_three_codes = primary.head(3)["MODEL_KODU"].astype(str).tolist()
+    eligible = primary.loc[primary["FIZIKSEL_TUTARLI"]]
+    if len(eligible) < 3:
+        raise RuntimeError("Fiziksel tutarlılık testini geçen en az üç model bulunamadı.")
+    top_three_codes = eligible.head(3)["MODEL_KODU"].astype(str).tolist()
     best_code = top_three_codes[0]
     best_model = final_models[best_code]
     plot_metric_bars(primary, graph_dir)
@@ -1070,6 +1261,7 @@ def main() -> int:
                 "MAE_TL": float(metric_row["MAE"]),
                 "MAPE_YUZDE": float(metric_row["MAPE"]),
                 "WAPE_YUZDE": float(metric_row["WAPE"]),
+                "MONOTONLUK_IHLALI_YUZDE": float(metric_row["MONOTONLUK_IHLALI_YUZDE"]),
                 "tam_veri_parametreleri": full_params[code],
             }
         )
@@ -1087,7 +1279,10 @@ def main() -> int:
         "kaynak_excel": str(args.excel.resolve()),
         "model_kodu": best_code,
         "model_adi": DISPLAY_NAMES[best_code],
-        "secim_olcutu": "Nested 5x4 CV OOF RMSE (en düşük)",
+        "secim_olcutu": (
+            "Fiziksel tutarlılık testini geçen (monotonluk ihlali ≤ %1) modeller arasında "
+            "Nested 5x4 CV OOF RMSE (en düşük)"
+        ),
         "ozellik_sirasi": FEATURES,
         "hedef": TARGET,
         "hedef_aciklamasi": "Yİ-ÜFE ile Temmuz 2026 değerine güncellenmiş sözleşme bedeli",
@@ -1110,6 +1305,10 @@ def main() -> int:
         "en_iyi_3_model": top_three_models,
         "egitim_verisi_ozellik_araliklari": feature_ranges,
         "egitim_satir_sayisi": int(len(data)),
+        "haric_tutulan_projeler": [
+            {"sira_no": int(row["SIRA_NO"]), "proje_adi": str(row["PROJE_ADI"]), "gerekce": str(row["GEREKCE"])}
+            for _, row in excluded.iterrows()
+        ],
         "uygulama_model_dosyasi": "en_iyi_3_model.joblib",
         "tahmin_alt_siniri": 0.0,
         "yaklasik_konformal_seviye": 0.90,

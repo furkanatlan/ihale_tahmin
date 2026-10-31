@@ -1,16 +1,26 @@
-                       Model     R² (O) RMSE (M TL) (O) NRMSE (%) MAE (M TL) (O) MAPE (%) (O) MedAE (M TL) WAPE (%)   RMSLE Bias (M TL)
- Histogram Gradient Boosting   0.8952 ★           22.58     24.71          20.71      28.61 ★        14.72    22.66  0.2573       20.71
-           Stacking Ensemble  0.8781 ★★           24.35     26.65          24.00     43.70 ★★        22.13    26.26  0.3909       24.00
-          Rastgele Orman (O) 0.7985 ★★★           31.32     34.27          30.60    59.69 ★★★        34.71    33.49  0.5014       30.60
-                    CatBoost     0.3938           54.31     59.43          51.78       105.35        61.08    56.66  0.7541       51.78
-              ElasticNet (O)     0.3920           54.39     59.52          52.39        79.48        43.52    57.32 14.3357      -52.39
-        K-En Yakın Komşu (O)     0.3520           56.15     61.45          53.39       103.09        41.77    58.42  0.7435       26.45
-                 XGBoost (O)    -0.1986           76.37     83.57          71.98       149.10        84.34    78.76  0.9397       71.98
-Çoklu Doğrusal Regresyon (O)    -0.3403           80.76     88.37          70.24        88.87        43.52    76.86 14.3469      -70.24
+                              Model     R² (O) RMSE (M TL) (O) NRMSE (%) MAE (M TL) (O) MAPE (%) (O) MedAE (M TL) WAPE (%)   RMSLE Bias (M TL)
+                    Monoton XGBoost   0.8803 ★           21.18     16.80          21.13      24.13 ★        20.35    16.76  0.2407       21.13
+                        XGBoost (O)  0.7198 ★★           32.41     25.71          32.10     35.07 ★★        29.90    25.46  0.3245       32.10
+Monoton Harman (ET+FÖ, CAT+FÖ, XGB) 0.4694 ★★★           44.61     35.38          35.45        40.48        30.36    28.12  0.3828       35.45
+                           CatBoost     0.3881           47.90     38.00          44.46        48.72        36.45    35.26  0.4249       44.46
+               K-En Yakın Komşu (O)     0.3526           49.27     39.08          47.55        50.45        39.94    37.71  0.4373       20.92
+  Extra Trees + Fiziksel Özellikler     0.2053           54.59     43.30          41.61        44.60        30.11    33.01  0.4119       41.61
+           Monoton Extra Trees + FÖ     0.1912           55.07     43.69          41.83        48.47        36.59    33.18  0.4467       41.29
+                 Rastgele Orman (O)     0.1618           56.07     44.47          52.80        51.73        46.86    41.88  0.4313       52.80
+              Monoton CatBoost + FÖ     0.1480           56.53     44.84          45.16        49.35        34.86    35.82  0.4423       38.74
+     CatBoost + Fiziksel Özellikler    -0.1358           65.26     51.77          49.65        46.84        24.89    39.38  0.4190       49.65
+                  Stacking Ensemble    -0.3648           71.54     56.75          54.66    38.41 ★★★        42.05    43.35  0.3682       51.00
+        Histogram Gradient Boosting    -0.6184           77.91     61.80          59.20        47.61        31.62    46.96  0.4208       59.20
+            Gauss Süreci Regresyonu    -0.6994           79.83     63.32          55.68        54.04        29.30    44.17  0.4831       53.92
+       Çoklu Doğrusal Regresyon (O)    -2.0486          106.92     84.81          90.80        82.84        58.72    72.02 10.1670       22.64
+                     ElasticNet (O)    -2.7434          118.48     93.98          87.88        76.62        32.79    69.70  0.6035       87.88
 
 
 
 (O): Tez ile ortak model veya metrik.
+FÖ: Fiziksel özellikler (çap×uzunluk, çap²×uzunluk, log uzunluk, km başına vana).
+Monoton: Tahmin; çap, uzunluk, vana ve PİG istasyonu sayısı arttıkça azalamaz (fiziksel tutarlılık).
+Uygulamaya alınan modeller: monotonluk ihlali ≤ %1 olanlar arasında Nested CV RMSE'si en düşük 3 model.
 ★: En iyi, ★★: ikinci en iyi, ★★★: üçüncü en iyi R² veya MAPE sonucu.
 R²: Modelin gerçek bedellerdeki değişimi açıklama gücünü gösterir. Büyük olması daha iyidir.
 RMSE: Büyük hataları daha fazla cezalandıran tipik hata büyüklüğüdür. Küçük olması daha iyidir.

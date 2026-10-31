@@ -128,6 +128,37 @@ En yüksek bedelli proje diğer bütün satırlardan belirgin biçimde ayrılır
 
 ## 8. Nihai sonuçların yorumu
 
+### 8.1 Güncel sürüm (01.11.2026): 15 model, MAGA FAZ 2 hariç
+
+MAGA FAZ 2 DGBH, km başına maliyeti benzer 40 inç hatların 2–3 katı olduğu ve kurum içi teyitle olağan kapsam dışı olduğu doğrulandığı için eğitimden çıkarıldı. Eğitimde 64 proje kullanıldı: 3'ü sabit test, 61'i nested CV.
+
+Mevcut modellere şunlar eklendi:
+- **Fiziksel özellik mühendisliği:** çap×uzunluk, çap²×uzunluk, log uzunluk, km başına vana.
+- **Monoton kısıtlı ağaç modelleri:** tahmin girdilerle birlikte artmak zorunda.
+- **Gauss süreci regresyonu.**
+- **Monoton harman:** üç monoton modelin ortalaması.
+
+Uygulamaya alınacak modeller artık iki koşulla seçiliyor: fiziksel tutarlılık testini geçmeleri (monotonluk ihlali ≤ %1) ve bu modeller arasında nested CV RMSE'nin en düşük olması.
+
+| Sıra | Model | R² | RMSE (M TL) | MAE (M TL) | WAPE | MedAE (M TL) | Monotonluk ihlali |
+|---:|---|---:|---:|---:|---:|---:|---:|
+| 1 | Monoton Extra Trees + FÖ | 0,907 | 175,29 | 89,55 | %22,53 | 33,99 | %0 |
+| 2 | Monoton CatBoost + FÖ | 0,902 | 179,29 | 90,57 | %22,79 | 46,81 | %0 |
+| 3 | Monoton XGBoost | 0,901 | 180,86 | 93,87 | %23,62 | 45,03 | %0 |
+
+Kısıtsız Extra Trees + FÖ (RMSE 177,10) ve XGBoost (189,74) da güçlü sonuç verdi. Ancak bu iki model, girdi artarken tahminin düştüğü durumlarda sırasıyla %10,9 ve %13,7 ihlal gösterdiği için uygulamaya alınmadı.
+
+Önceki kurulumla adil kıyas için iki kurulum aynı 61 proje ve aynı dış katlar üzerinde sınandı:
+
+| Kurulum | RMSE | MAE | MedAE |
+|---|---:|---:|---:|
+| Önceki birinci model: RF, MAGA dahil eğitilmiş | 304,9 mn TL | 157,6 mn TL | 55,6 mn TL |
+| Yeni birinci model | 175,3 mn TL | 89,6 mn TL | 34,0 mn TL |
+
+Yeni birinci model, bütün bu ölçülerde yaklaşık %40 daha düşük hata veriyor. Deneylerin ayrıntısı [model_gelistirme_raporu.md](model_gelistirme_raporu.md) dosyasındadır. Birinci model için yaklaşık %90 çapraz-konformal yarıçap ±260,8 milyon TL'dir (önceki: ±408,4 milyon TL).
+
+### 8.2 Önceki sürüm: 8 model, MAGA FAZ 2 dahil (tarihsel kayıt)
+
 Birincil nested CV OOF sıralaması:
 
 | Sıra | Model | R² | RMSE (M TL) | MAE (M TL) | MAPE | WAPE | MedAE (M TL) |
@@ -161,6 +192,6 @@ Kullanıcı dört özellik şartı koyduğu için bu ek değişkenler mevcut mod
 
 `tahmin_uygulamasi.py`, kullanıcının BORU ÇAPI, HAT UZUNLUĞU (km), HAT VANASI SAYISI (ADET) ve PİG İSTASYONU SAYISI (ADET) değerlerini girebildiği Streamlit arayüzüdür. Hedef doğrudan `GÜNCEL DEĞER (Yİ ÜFE / TEMMUZ 2026)` sütunudur ve sonuçlar TL olarak sunulur.
 
-Uygulamanın gösterdiği üç model, üç satırlık holdout'a göre değil 62 eğitim satırındaki nested CV OOF RMSE sırasına göre seçilir. Güncel sıralama Rastgele Orman, Stacking Ensemble ve XGBoost'tur. Eğitim komutu bu üç modeli tüm 65 satırla yeniden eğitir, `en_iyi_3_model.joblib` içinde saklar ve model sırası, performans değerleri ile eğitim özelliği aralıklarını `model_manifest.json` dosyasına yazar. Arayüz bu iki artefaktı birlikte doğrulayarak yükler.
+Uygulamanın gösterdiği üç model, üç satırlık holdout'a göre seçilmez. Seçim, fiziksel tutarlılık testini geçen modeller arasında 61 eğitim satırındaki nested CV OOF RMSE sırasına göre yapılır. Güncel sıralama: Monoton Extra Trees + Fiziksel Özellikler, Monoton CatBoost + Fiziksel Özellikler ve Monoton XGBoost. Eğitim komutu bu üç modeli hariç tutulan proje dışındaki 64 satırın tamamıyla yeniden eğitir, `en_iyi_3_model.joblib` içinde saklar ve model sırası, performans değerleri ile eğitim özelliği aralıklarını `model_manifest.json` dosyasına yazar. Arayüz bu iki artefaktı birlikte doğrulayarak yükler.
 
 Her modelin tahmini ayrı kartta ve ortak yatay çubuk grafikte gösterilir. Ayrıca nested CV R², RMSE ve MAE değerleri tahmin ekranında referans olarak verilir. Bir girdi eğitim minimum-maksimum aralığının dışındaysa uygulama tahmini engellemez; bunun bir ekstrapolasyon olduğunu açıkça bildirir. `SIRA NO`, proje adı, sözleşme tarihi, nominal bedel ve TAKE OFF vana sayısı uygulama girdisi değildir; hiçbir zaman serisi değişkeni veya kronolojik bölme kullanılmaz.

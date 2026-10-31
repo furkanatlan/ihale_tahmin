@@ -147,6 +147,14 @@ if submitted:
             "Bazı girdiler eğitim verisinin dışında; bu nedenle tahmin ekstrapolasyondur ve daha "
             "yüksek belirsizlik taşır:\n\n- " + "\n- ".join(extrapolation)
         )
+    if pipe_diameter >= 40 and line_length >= 100:
+        excluded_names = ", ".join(item["proje_adi"] for item in manifest.get("haric_tutulan_projeler", []))
+        st.info(
+            "Büyük çaplı uzun hat: Model olağan kapsamlı projeleri tahmin eder. Kompresör istasyonu, "
+            "malzeme dahil sözleşme, özel geçişler veya kamulaştırma gibi ek kapsamlar varsa gerçek bedel "
+            "belirgin şekilde yüksek olabilir"
+            + (f" (ör. eğitimden kapsam farkı nedeniyle çıkarılan {excluded_names})." if excluded_names else ".")
+        )
 
     with st.status("🔎 Güncel TÜİK Yİ-ÜFE verisi aranıyor (TCMB EVDS)…", expanded=True) as status:
         revaluation = yeniden_degerleme_hazirla(base_period, ilerleme=st.write)
@@ -252,6 +260,8 @@ with st.expander("Model kapsamı ve kullanım notları"):
 - Sıralama ölçütü: **{manifest['secim_olcutu']}**.
 - Hedef: **{manifest['hedef_aciklamasi']} ({manifest['para_birimi']})**.
 - Eğitim örneği sayısı: **{manifest['egitim_satir_sayisi']}**.
+- Eğitimden hariç tutulan projeler: {"; ".join(f"**{item['proje_adi']}** ({item['gerekce']})" for item in manifest.get("haric_tutulan_projeler", [])) or "yok"}.
+- Seçilen modeller fiziksel olarak tutarlıdır: çap, uzunluk, vana veya PİG istasyonu sayısı arttığında tahmin azalmaz.
 - `SIRA NO`, proje adı, sözleşme tarihi, nominal sözleşme bedeli ve TAKE OFF vana sayısı model girdisi değildir.
 - Bu çalışma zaman serisi analizi değildir; sıra numarası yalnızca kayıt kimliğidir.
 - Yeniden değerleme: model çıktısı, {manifest['fiyat_bazi']} sonrasındaki aylık Yİ-ÜFE değişimleri zincirlenerek en son yayımlanmış döneme taşınır. Hata metrikleri (RMSE, MAE) model fiyat bazındadır.

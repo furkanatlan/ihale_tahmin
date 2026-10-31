@@ -15,9 +15,11 @@ kutuphaneleri requirements.txt dosyasina gore kurar.
 ---------------------------------
 .\02_egitim.cmd
 
-Bu komut Excel verisini okur, butun klasik ve modern modelleri egitir,
+Bu komut Excel verisini okur, HARIC_TUTULAN_PROJELER listesindeki projeleri
+ayirir, 15 modeli (klasik, modern ve gelistirilmis) egitir, fiziksel
+tutarlilik (monotonluk) testini uygular,
 performans metriklerini hesaplar, TXT/CSV/Excel raporlarini ve PNG grafiklerini
-sonuclar klasorune yazar. Nested CV OOF RMSE siralamasindaki en iyi 3 modeli
+sonuclar klasorune yazar. Testi gecenler arasinda Nested CV OOF RMSE si en iyi 3 modeli
 en_iyi_3_model.joblib dosyasina kaydeder.
 
 3) TAHMIN UYGULAMASINI ACMA

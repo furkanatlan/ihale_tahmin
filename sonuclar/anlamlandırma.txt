@@ -1,11 +1,17 @@
+Birinci model: Monoton Extra Trees + Fiziksel Özellikler. Nested CV OOF sonuçları; 61 proje, Temmuz 2026 Yİ-ÜFE TL; MAGA FAZ 2 kapsam farkı nedeniyle hariç. Parantez içindeki değerler bootstrap ile hesaplanan yaklaşık %95 güven aralığıdır.
+
 | Metrik | Sonuç | Anlamı |
 |---|---:|---|
-| R² | 0,8952 | Model, sözleşme bedellerindeki değişimin yaklaşık %89,52’sini açıklıyor. Bu, “%89,52 doğru tahmin” demek değildir. |
-| RMSE | 22,58 milyon TL | Büyük hatalara daha fazla ceza veren hata ölçüsü. Modelin hata büyüklüğü yaklaşık 22,58 milyon TL seviyesinde. |
-| NRMSE | %24,71 | RMSE’nin ortalama gerçek bedele oranı. Hata seviyesi, ortalama ihale bedelinin yaklaşık %24,71’i. |
-| MAE | 20,71 milyon TL | Tahminler gerçek değerlerden ortalama 20,71 milyon TL uzakta. |
-| MAPE | %28,61 | Her ihalenin mutlak yüzde hatasının ortalaması yaklaşık %28,61. |
-| MedAE | 14,72 milyon TL | Tahminlerin yarısında mutlak hata 14,72 milyon TL’den düşük, yarısında yüksek. |
-| WAPE | %22,66 | Toplam mutlak hata, toplam gerçek ihale tutarının yaklaşık %22,66’sı. |
-| RMSLE | 0,2573 | Modelin oransal/çarpansal sapmasını logaritmik ölçekte gösterir. Düşük olması iyidir. |
-| Bias | +20,71 milyon TL | Model ortalama olarak gerçek değerden 20,71 milyon TL daha yüksek tahmin veriyor. |
+| R² | 0,907 (0,80–0,97) | Model, sözleşme bedellerindeki değişimin yaklaşık %91'ini açıklıyor. Bu, “%91 doğru tahmin” demek değildir. |
+| RMSE | 175,3 milyon TL | Büyük hatalara daha fazla ceza veren hata ölçüsü. En büyük katkı milyar TL'lik birkaç projeden gelir; örneğin 3,10 milyar TL'lik Mut–Mersin projesi 2,14 milyar TL tahmin edilmiştir. |
+| NRMSE | %44,1 | RMSE'nin ortalama gerçek bedele (384,7 milyon TL) oranı. |
+| MAE | 89,6 milyon TL | Tahminler gerçek değerlerden ortalama 89,6 milyon TL uzakta. 500 milyon TL altındaki 53 projede bu değer 69,5 milyon TL'dir. |
+| MAPE | %60,0 | Her ihalenin mutlak yüzde hatasının ortalaması. Gerçek bedeli çok küçük birkaç projedeki büyük yüzde sapmalar bu ortalamayı yukarı çeker; tek başına yorumlanmamalıdır. |
+| MedAE | 34,0 milyon TL | Projelerin yarısında mutlak hata 34,0 milyon TL'den düşük. Tipik proje için en sağlam ölçüdür. |
+| WAPE | %22,5 | Toplam mutlak hata, toplam gerçek ihale tutarının yaklaşık %22,5'i. |
+| RMSLE | 0,51 | Oransal sapmayı logaritmik ölçekte gösterir. Tahmin, gerçek değerin kabaca 1,7 katı ile 1,7'de biri arasında kalır. |
+| Bias | +20,3 milyon TL | Ortalamada hafif fazla tahmin eğilimi var. Güven aralığı (−26,1 / +63,9 milyon TL) sıfırı kapsadığı için sistematik bir sapma kanıtı yoktur. |
+
+Pratik yorum: Projelerin %66'sında tahmin gerçek bedelin ±%30 bandında, %56'sında ±%20 bandındadır. 500 milyon TL altındaki projelerde medyan yüzde hata %19,9'dur.
+
+Fiziksel tutarlılık: Model; çap, uzunluk, hat vanası veya PİG istasyonu sayısı arttığında daha düşük bedel tahmin etmez (monotonluk ihlali %0).

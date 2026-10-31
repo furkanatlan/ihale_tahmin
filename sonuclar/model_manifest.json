@@ -1,9 +1,9 @@
 {
-  "olusturma_tarihi": "2026-07-14T17:39:43.242022+03:00",
+  "olusturma_tarihi": "2026-11-01T01:27:15.234594+03:00",
   "kaynak_excel": "C:\\Users\\MSI\\Calismalar\\Enes\\VERİLER_GÜNCELLENMİŞ.xlsx",
-  "model_kodu": "RF",
-  "model_adi": "Rastgele Orman (RF)",
-  "secim_olcutu": "Nested 5x4 CV OOF RMSE (en düşük)",
+  "model_kodu": "ET_FE_MONO",
+  "model_adi": "Monoton Extra Trees + Fiziksel Özellikler (Yeni)",
+  "secim_olcutu": "Fiziksel tutarlılık testini geçen (monotonluk ihlali ≤ %1) modeller arasında Nested 5x4 CV OOF RMSE (en düşük)",
   "ozellik_sirasi": [
     "BORU_CAPI",
     "HAT_UZUNLUGU_KM",
@@ -20,66 +20,66 @@
   "zaman_serisi_modeli_mi": false,
   "yalnizca_streamlit_girdileri_kullanildi_mi": true,
   "istenen_sabit_test_orani": 0.05,
-  "gercek_sabit_test_orani": 0.046153846153846156,
-  "degerlendirme_egitim_satir_sayisi": 62,
+  "gercek_sabit_test_orani": 0.046875,
+  "degerlendirme_egitim_satir_sayisi": 61,
   "sabit_test_satir_sayisi": 3,
   "dogrulama_duzeni": "%5'e en yakın tam satır sayısıyla sabit test; kalan eğitim verisinde rastgele karıştırmalı nested KFold; zamansal bölme yok",
   "tam_veri_parametreleri": {
-    "max_features": "sqrt",
-    "min_samples_leaf": 2,
-    "min_samples_split": 5,
-    "n_estimators": 300
+    "model__max_features": 1.0,
+    "model__min_samples_leaf": 2
   },
   "en_iyi_3_model": [
     {
       "sira": 1,
-      "model_kodu": "RF",
-      "model_adi": "Rastgele Orman (RF)",
-      "model_grubu": "Tez-klasik",
-      "R2": 0.5796479482633852,
-      "RMSE_TL": 555403060.5468471,
-      "NRMSE_YUZDE": 115.41580646864709,
-      "MAE_TL": 169851852.18367115,
-      "MAPE_YUZDE": 53.49007372319413,
-      "WAPE_YUZDE": 35.29614777540161,
+      "model_kodu": "ET_FE_MONO",
+      "model_adi": "Monoton Extra Trees + Fiziksel Özellikler (Yeni)",
+      "model_grubu": "Geliştirilmiş",
+      "R2": 0.9067012106162498,
+      "RMSE_TL": 175287969.07292867,
+      "NRMSE_YUZDE": 44.1037483742625,
+      "MAE_TL": 89552459.72829628,
+      "MAPE_YUZDE": 59.96618736913166,
+      "WAPE_YUZDE": 22.532060648782014,
+      "MONOTONLUK_IHLALI_YUZDE": 0.0,
       "tam_veri_parametreleri": {
-        "max_features": "sqrt",
-        "min_samples_leaf": 2,
-        "min_samples_split": 5,
-        "n_estimators": 300
+        "model__max_features": 1.0,
+        "model__min_samples_leaf": 2
       }
     },
     {
       "sira": 2,
-      "model_kodu": "STACK",
-      "model_adi": "Stacking Ensemble (Modern)",
-      "model_grubu": "Modern ek",
-      "R2": 0.5704047072764049,
-      "RMSE_TL": 561476313.5128558,
-      "NRMSE_YUZDE": 116.67786179162252,
-      "MAE_TL": 181481650.62250456,
-      "MAPE_YUZDE": 71.35963544250689,
-      "WAPE_YUZDE": 37.71288376631276,
-      "tam_veri_parametreleri": {}
+      "model_kodu": "CAT_FE_MONO",
+      "model_adi": "Monoton CatBoost + Fiziksel Özellikler (Yeni)",
+      "model_grubu": "Geliştirilmiş",
+      "R2": 0.9023882698235771,
+      "RMSE_TL": 179293733.3146673,
+      "NRMSE_YUZDE": 45.111628259565734,
+      "MAE_TL": 90569439.88078268,
+      "MAPE_YUZDE": 53.90977342058686,
+      "WAPE_YUZDE": 22.78794037049993,
+      "MONOTONLUK_IHLALI_YUZDE": 0.0,
+      "tam_veri_parametreleri": {
+        "model__depth": 3,
+        "model__l2_leaf_reg": 3.0,
+        "model__learning_rate": 0.03
+      }
     },
     {
       "sira": 3,
-      "model_kodu": "XGB",
-      "model_adi": "XGBoost (XGB)",
-      "model_grubu": "Tez-klasik",
-      "R2": 0.5406373051459785,
-      "RMSE_TL": 580603359.3309704,
-      "NRMSE_YUZDE": 120.6525669657116,
-      "MAE_TL": 175963115.42580646,
-      "MAPE_YUZDE": 54.11717199986646,
-      "WAPE_YUZDE": 36.566101842523196,
+      "model_kodu": "XGB_MONO",
+      "model_adi": "Monoton XGBoost (Yeni)",
+      "model_grubu": "Geliştirilmiş",
+      "R2": 0.9006721022982028,
+      "RMSE_TL": 180862998.54666644,
+      "NRMSE_YUZDE": 45.50646698860465,
+      "MAE_TL": 93873469.33196722,
+      "MAPE_YUZDE": 59.019220826830875,
+      "WAPE_YUZDE": 23.619258596770027,
+      "MONOTONLUK_IHLALI_YUZDE": 0.0,
       "tam_veri_parametreleri": {
-        "colsample_bytree": 0.8,
         "learning_rate": 0.05,
         "max_depth": 2,
-        "n_estimators": 150,
-        "reg_lambda": 10.0,
-        "subsample": 0.8
+        "n_estimators": 150
       }
     }
   ],
@@ -91,7 +91,7 @@
     },
     "HAT_UZUNLUGU_KM": {
       "minimum": 5.07,
-      "medyan": 43.23,
+      "medyan": 42.084999999999994,
       "maksimum": 289.6
     },
     "HAT_VANASI_SAYISI": {
@@ -105,11 +105,18 @@
       "maksimum": 4.0
     }
   },
-  "egitim_satir_sayisi": 65,
+  "egitim_satir_sayisi": 64,
+  "haric_tutulan_projeler": [
+    {
+      "sira_no": 23,
+      "proje_adi": "MAGA FAZ 2 DGBH",
+      "gerekce": "MAGA FAZ 2 DGBH: km başına maliyet (41,1 mn TL/km) benzer 40 inç hatların 2-3 katı; kurum içi teyitle olağan kapsam dışı olduğu doğrulandı (01.11.2026)."
+    }
+  ],
   "uygulama_model_dosyasi": "en_iyi_3_model.joblib",
   "tahmin_alt_siniri": 0.0,
   "yaklasik_konformal_seviye": 0.9,
-  "yaklasik_konformal_yaricap": 408381407.85449827,
+  "yaklasik_konformal_yaricap": 260808721.11312127,
   "paket_surumu": {
     "python": "3.10.11",
     "numpy": "2.2.6",
